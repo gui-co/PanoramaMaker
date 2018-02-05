@@ -67,7 +67,7 @@ int main()
   openTile("data/s33_w071_1arc_v3.dt2",&tile);
   printMax(tile);
 
-  fprintf(stdout,"Test 5: read DTED file and store the data in a Space\n")
+  fprintf(stdout,"Test 5: read DTED file and store the data in a Space\n");
   Space space;
   allocSpace(&space);
   for (int i=0 ; i<DIM_DEG*2 ; i++)
