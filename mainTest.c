@@ -49,21 +49,21 @@ int main()
   /* open and read DTED files */
   
   fprintf(stdout,"Test 1: open and read a 1 second resolution file\n");
-  openTile("n45_e008_1arc_v3.dt2",&tile);
+  openTile("data/n45_e008_1arc_v3.dt2",&tile);
   freeTile(&tile);
   
   fprintf(stdout,"Test 2: free the occupied space and open a tile with different resolutions in the two dimensions\n");
   freeTile(&tile);
-  openTile("n59_e009_1arc_v3.dt2",&tile);
+  openTile("data/n59_e009_1arc_v3.dt2",&tile);
 
   fprintf(stdout,"Test 4: read the data of a tile with E longitudes and N latitude (Mt blanc)\n");
   freeTile(&tile);
-  openTile("n45_e006_1arc_v3.dt2",&tile);
+  openTile("data/n45_e006_1arc_v3.dt2",&tile);
   printMax(tile);
 
   fprintf(stdout,"Test 4: read the data of a tile with W longitudes and S latitude (Aconcagua)\n");
   freeTile(&tile);
-  openTile("s33_w071_1arc_v3.dt2",&tile);
+  openTile("data/s33_w071_1arc_v3.dt2",&tile);
   printMax(tile);
 
   return 0;
