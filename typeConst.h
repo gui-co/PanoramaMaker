@@ -13,6 +13,8 @@
 
 #include <stdint.h>
 
+#define DIM_DEG 5
+
 
 /*
  * a tile contains the data of one altitude file (DTED file) in a 
@@ -24,5 +26,14 @@ typedef struct tile {
   int longitudeDimension;
   int latitudeDimension;
 } Tile;
+
+/*
+ * a space contain an array of tiles around the origin
+ */
+typedef struct space {
+  Tile *** tile;
+  double longitudeOrigin;
+  double latitudeOrigin;
+} Space;
 
 #endif

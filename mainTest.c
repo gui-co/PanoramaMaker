@@ -11,6 +11,7 @@
 #include "typeConst.h"
 #include "tile.h"
 #include "error.h"
+#include "coordinate.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -65,6 +66,16 @@ int main()
   freeTile(&tile);
   openTile("data/s33_w071_1arc_v3.dt2",&tile);
   printMax(tile);
+
+  fprintf(stdout,"Test 5: read DTED file and store the data in a Space\n")
+  Space space;
+  allocSpace(&space);
+  for (int i=0 ; i<DIM_DEG*2 ; i++)
+  {
+    space.tile[0][i] = malloc(sizeof(Tile));
+    openTile("data/s33_w071_1arc_v3.dt2",space.tile[0][i]);
+    printMax(*space.tile[0][i]);
+  }
 
   return 0;
 }
