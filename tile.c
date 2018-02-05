@@ -43,10 +43,16 @@ static int16_t dtedToLittleEndian(int16_t x)
  */
 void allocTile(Tile * tile)
 {
-  tile->data = malloc(tile->longitudeDimension*sizeof(int16_t*));
+  if (!(tile->data = malloc(tile->longitudeDimension*sizeof(int16_t*))))
+  {
+    end(E_MALLOC);
+  }
   for (int i=0 ; i<tile->longitudeDimension ; i++)
   {
-    tile->data[i] = malloc(tile->latitudeDimension*sizeof(int16_t));
+    if (!(tile->data[i] = malloc(tile->latitudeDimension*sizeof(int16_t))))
+    {
+      end(E_MALLOC);
+    }
   }
 }
 
