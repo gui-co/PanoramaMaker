@@ -32,8 +32,8 @@ typedef struct tile {
  */
 typedef struct space {
   Tile *** tile;
-  double longitudeOrigin;
-  double latitudeOrigin;
+  int longitudeOriginDeg;
+  int latitudeOriginDeg;
 } Space;
 
 #endif
