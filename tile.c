@@ -1,11 +1,11 @@
-/******************************************************************************
- * tile.c                                                .       .          . *
- * methodes to deal with DTED files and tiles, the     .   .   /\   .     .   *
- * memory representation of a DTED file                 .     /  \ .   /\    .*
- *                                                    .    . /    \/\ /  \  . *
- * panoramaMaker                                       .    /     /  \    \   *
- * Guillaume Communie - guillaume.communie@gmail.com       /     /    \    \  *
- ******************************************************************************/
+/*****************************************************************************
+ * tile.c                                               .       .          . *
+ * Methodes to deal with DTED files and tiles, the    .   .   /\   .     .   *
+ * memory representation of a DTED file                .     /  \ .   /\    .*
+ *                                                   .    . /    \/\ /  \  . *
+ * panoramaMaker                                      .    /     /  \    \   *
+ * Guillaume Communie - guillaume.communie@gmail.com      /     /    \    \  *
+ *****************************************************************************/
 
 
 #include "tile.h"
@@ -14,123 +14,101 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
+#include <errno.h>
 
 
 /*
- * conversion of altitude from DTED file representation to little endian 
- * 2's complement representation
- * param x: 16bits integer from DTED file
- * returns: 16bits integer in little endian and negative in 2's complement
+ * Conversion of altitude from DTED file representation to little endian 
+ * 2's complement representation.
+ * param x: DTED file data.
+ * return: Data in little endian and negative in 2's complement.
  */
-static int16_t dtedToLittleEndian(int16_t x)
+static int16_t toLittleEndian(int16_t x)
 {
-  /* big to little endian */
-  x = (x>>8)|(x<<8);
-
-  /* for negative number: from magnitude to 2's complement */
-  if (x&0x8000)
-  {
-    x=-1*(x&0x7FFF);
-  }
-
+  x = (x >> 8) | (x << 8);
+  x = x & 0x8000 ? -1 * (x & 0x7FFF) : x;
   return x;
 }
 
 
 /*
- * memory allocation to save the HGT file content
- * param tile: adress of a tile (Tile type)
+ * Free the memory associated to a tile.
+ * param tile: Pointer to a tile.
  */
-void allocTile(Tile * tile)
+void freeTile(Tile* tile)
 {
-  if (!(tile->data = malloc(tile->longitudeDimension*sizeof(int16_t*))))
-  {
-    end(E_MALLOC);
-  }
-  for (int i=0 ; i<tile->longitudeDimension ; i++)
-  {
-    if (!(tile->data[i] = malloc(tile->latitudeDimension*sizeof(int16_t))))
-    {
-      end(E_MALLOC);
-    }
-  }
-}
-
-
-/*
- * free the memory associated to a tile
- * param tile: address of a tile (Tile type)
- */
-void freeTile(Tile * tile)
-{
-  for (int i=0 ; i<tile->longitudeDimension ; i++)
-  {
-    free(tile->data[i]);
-  }
   free(tile->data);
-  tile->data = NULL;
-  tile->longitudeDimension = 0;
-  tile->latitudeDimension = 0;
+  free(tile);
 }
 
 
 /* 
- * open a DTED file and read the data to put them in memory
- * param fileName: path to a DTED file
- * param tile: address of a tile (Tile type) where the data will be saved
+ * Open a DTED file, read and store the altitude data.
+ * param fileName: Path to a DTED file.
+ * return: Pointer to the tile.
  */
-void openTile(char* fileName, Tile * tile)
+Tile* openTile(char* fileName)
 {
   FILE* dtedFile;
-  long size;
-  char data[8];
+  long fileSize, expectedSize;
+  char headerData[8];
+  Tile* tile;
+  int nbLon, nbLat, pt;
 
-  /* file opening */
-  if (!(dtedFile = fopen(fileName,"r")))
+  // Open file.
+  if (!(dtedFile = fopen(fileName, "r")))
   {
-    sprintf(errorData,"%s",fileName);
-    end(E_FILE_NOT_FOUND);
+    errPrintf("Unable to open %s >", fileName);
   }
     
-  fprintf(stdout,"Opening of %s\n",fileName);
+  fprintf(stdout, "Opening of %s\n", fileName);
 
-  /* the number of points in the two dimensions is obtained from the header */
-  fseek(dtedFile,361,SEEK_CUR);
-  fread(&data,8,1,dtedFile);
-  tile->latitudeDimension = 1000*(data[0]-48)+100*(data[1]-48)+10*(data[2]-48)+(data[3]-48);
-  tile->longitudeDimension = 1000*(data[4]-48)+100*(data[5]-48)+10*(data[6]-48)+(data[7]-48);
-
-  /* the size is checked according to the numbers of points */
-  fseek(dtedFile,0,SEEK_END);
-  size = ftell(dtedFile);
-  fprintf(stdout,"Size: %ld bytes\n",size);
-
-  if (size != 3428+(tile->latitudeDimension*2+12)*(tile->longitudeDimension))
+  // Get the number of points.
+  fseek(dtedFile, 361, SEEK_CUR);
+  fread(&headerData, 8, 1, dtedFile);
+  nbLat = 1000 * (headerData[0] - 48) + 100 * (headerData[1] - 48) 
+          + 10 * (headerData[2] - 48) + (headerData[3] - 48);
+  nbLon = 1000 * (headerData[4] - 48) + 100 * (headerData[5] - 48) 
+          + 10 * (headerData[6] - 48) + (headerData[7] - 48);
+  
+  // Check file size.
+  fseek(dtedFile, 0, SEEK_END);
+  fileSize = ftell(dtedFile);
+  fprintf(stdout, "Size: %ld bytes\n", fileSize);
+  expectedSize = 3428 + (nbLat * 2 + 12) * nbLon;
+  if (fileSize != expectedSize)
   {
-    sprintf(errorData,"%s",fileName);
-    end(E_FILE_NOT_CORRECT);
+    errPrintf("The file has an incorrect size. %ld bytes where expected", 
+        expectedSize);
   }
 
-  /* memory allocation */
-  allocTile(tile);
-
-  /* data are read and saved according to the resolutions */
-  /* i (j) increases when longitude (latitude) goes W (S) to E (N) */
-  fseek(dtedFile,3428,SEEK_SET);
-  for (int i=0 ; i<tile->longitudeDimension ; i++)
+  // Memory allocation.
+  if (!(tile = malloc(sizeof(Tile))))
   {
-    fseek(dtedFile,8,SEEK_CUR);
-    for (int j=0 ; j<tile->latitudeDimension ; j++)
+    errPrintf("Unable to allocate memory for the tile >");
+  }
+  if (!(tile->data = malloc(nbLat * nbLon * sizeof(uint16_t))))
+  {
+    errPrintf("Unable to allocate memory for the tile data >");
+  }
+
+  // Data storage.
+  tile->latitudeDimension = nbLat;
+  tile->longitudeDimension = nbLon;
+  fseek(dtedFile, 3428, SEEK_SET);
+  for (int i = 0 ; i < nbLon ; i++)  // Longitude goes W to E.
+  {
+    fseek(dtedFile, 8, SEEK_CUR);
+    for (int j = 0 ; j < nbLat ; j++)  // Lat goes S to N.
     {
-      if (!fread(&tile->data[i][j],2,1,dtedFile))
-      {
-        sprintf(errorData,"%s",fileName);
-        end(E_FILE_NOT_CORRECT);
-      }
-      tile->data[i][j] = dtedToLittleEndian(tile->data[i][j]);
+      pt = i * nbLon + j;
+      fread(&tile->data[pt], 2, 1, dtedFile);
+      tile->data[pt] = toLittleEndian(tile->data[pt]);
     }
-    fseek(dtedFile,4,SEEK_CUR);
+    fseek(dtedFile, 4, SEEK_CUR);
   }
   
   fclose(dtedFile);
+  return tile;
 }
+

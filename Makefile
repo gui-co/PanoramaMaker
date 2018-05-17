@@ -1,7 +1,7 @@
 CFLAGS = -Wall
 LIBS = -lm
 
-mainTest: mainTest.o tile.o error.o coordinate.o
+mainTest: mainTest.o tile.o error.o
 	gcc -o $@ $^ $(LIBS)
 
 clean:

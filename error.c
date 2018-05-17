@@ -1,38 +1,62 @@
-/******************************************************************************
- * error.c                                               .       .          . *
- * error codes and program exit                        .   .   /\   .     .   *
- *                                                      .     /  \ .   /\    .*
- *                                                    .    . /    \/\ /  \  . *
- * panoramaMaker                                       .    /     /  \    \   *
- * Guillaume Communie - guillaume.communie@gmail.com       /     /    \    \  *
- ******************************************************************************/
+/*****************************************************************************
+ * error.c                                              .       .          . *
+ * error codes and program exit                       .   .   /\   .     .   *
+ *                                                     .     /  \ .   /\    .*
+ *                                                   .    . /    \/\ /  \  . *
+ * panoramaMaker                                      .    /     /  \    \   *
+ * Guillaume Communie - guillaume.communie@gmail.com      /     /    \    \  *
+ *****************************************************************************/
 
 
 #include "error.h"
 #include <stdio.h>
+#include <stdarg.h>
+#include <errno.h>
+#include <string.h>
 #include <stdlib.h>
 
 
 /*
- * exit the program when receiving different error codes
- * param eCode: the code of the error
+ * Print error message and exit the program. If '>' is the laste character
+ * of the format string, errno is read and printed.
+ * param fmt: format string.
  */
-void end(int err)
+void errPrintf(char* fmt, ...)
 {
-  switch (err)
-  {
-    case E_FILE_NOT_FOUND : fprintf(stderr,"Unable to open %s. File not found!\n",errorData);
-                            exit(1);
-    
-    case E_FILE_NOT_CORRECT : fprintf(stderr,"File %s not correct!\n",errorData);
-                              exit(1);
-    
-    case E_MALLOC : fprintf(stderr,"Memory allocation error!\n");
-                    exit(1);
-    
-    case E_FREAD : fprintf(stderr,"Error while reading %s file!\n",errorData);
-                   exit(1);
+	va_list args;
 
-    default : exit(1);
+  fprintf(stderr,"[ERROR]: ");
+	va_start(args, fmt);
+	vfprintf(stderr, fmt, args);
+	va_end(args);
+
+	if (fmt[0] != '\0' && fmt[strlen(fmt)-1] == '>')
+  {
+		fprintf(stderr, " %s", strerror(errno));
   }
+	fprintf(stderr, "\n");
+	exit(2);
 }
+
+
+/*
+ * Print warning message and return to program execution. If '>' is the last
+ * character, errno is read and printed.
+ * param fmt: format string.
+ */
+void warnPrintf(char* fmt, ...)
+{
+	va_list args;
+
+	fprintf(stderr, "[WARNING]:  ");
+	va_start(args, fmt);
+	vfprintf(stderr, fmt, args);
+	va_end(args);
+	
+  if (fmt[0] != '\0' && fmt[strlen(fmt)-1] == '>')
+  {
+		fprintf(stderr, " %s", strerror(errno));
+  }
+	fprintf(stderr, "\n");
+}
+

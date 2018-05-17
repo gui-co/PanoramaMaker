@@ -1,11 +1,11 @@
-/******************************************************************************
- * typesConst.h                                          .       .          . *
- * definitions of types and constant values            .   .   /\   .     .   *
- *                                                      .     /  \ .   /\    .*
- *                                                    .    . /    \/\ /  \  . *
- * panoramaMaker                                       .    /     /  \    \   *
- * Guillaume Communie - guillaume.communie@gmail.com       /     /    \    \  *
- ******************************************************************************/
+/*****************************************************************************
+ * typesConst.h                                         .       .          . *
+ * Definitions of types and constant values           .   .   /\   .     .   *
+ *                                                     .     /  \ .   /\    .*
+ *                                                   .    . /    \/\ /  \  . *
+ * panoramaMaker                                      .    /     /  \    \   *
+ * Guillaume Communie - guillaume.communie@gmail.com      /     /    \    \  *
+ *****************************************************************************/
 
 
 #ifndef TYPES_H
@@ -13,27 +13,18 @@
 
 #include <stdint.h>
 
+
 #define DIM_DEG 5
 
 
 /*
- * a tile contains the data of one altitude file (DTED file) in a 
- * two dimensions array of longitudeDimension and latitudeDimension
- * lengths
+ * Contains the data of one DTED file.
  */
 typedef struct tile {
-  int16_t ** data;
+  int16_t * data;
   int longitudeDimension;
   int latitudeDimension;
 } Tile;
 
-/*
- * a space contain an array of tiles around the origin
- */
-typedef struct space {
-  Tile *** tile;
-  int longitudeOriginDeg;
-  int latitudeOriginDeg;
-} Space;
-
 #endif
+

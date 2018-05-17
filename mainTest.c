@@ -1,81 +1,89 @@
-/******************************************************************************
- * mainTest.c                                            .       .          . *
- * Main function used to test the different functions  .   .   /\   .     .   *
- * during the development of the program                .     /  \ .   /\    .*
- *                                                    .    . /    \/\ /  \  . *
- * panoramaMaker                                       .    /     /  \    \   *
- * Guillaume Communie - guillaume.communie@gmail.com       /     /    \    \  *
- ******************************************************************************/
+/*****************************************************************************
+ * mainTest.c                                           .       .          . *
+ * Main function used to test the different functions .   .   /\   .     .   *
+ * during the development of the program               .     /  \ .   /\    .*
+ *                                                   .    . /    \/\ /  \  . *
+ * panoramaMaker                                      .    /     /  \    \   *
+ * Guillaume Communie - guillaume.communie@gmail.com      /     /    \    \  *
+ *****************************************************************************/
 
 
 #include "typeConst.h"
 #include "tile.h"
 #include "error.h"
-#include "coordinate.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 
 /*
- * print the maximum altitude found in a tile (Tile type) and the corresponding
- * indices in the tile->data array
- * param tile: tile where the data will be read
+ * Print the maximum altitude found in a tile and the corresponding 
+ * numbers of seconds in longitude and latitude dimension.
+ * param tile: Pointer to the tile.
  */
-void printMax(Tile tile)
+void printMax(Tile* tile)
 {
-  int16_t maxA = 0;
-  int maxI = 0;
-  int maxJ = 0;
+  int16_t maxAlt;
+  int lon;
+  int lat;
+  int pt;
+
+  maxAlt = 0;
+  lon = 0;
+  lat = 0;
   
-  for (int i=0;i<tile.longitudeDimension;i++)
+  for (int i = 0 ; i < tile->longitudeDimension ; i++)
   {
-    for (int j=0;j<tile.latitudeDimension;j++)
+    for (int j = 0 ; j < tile->latitudeDimension ; j++)
     {
-      if (tile.data[i][j] > maxA)
+      pt = i * tile->longitudeDimension + j;
+      if (tile->data[pt] > maxAlt)
       {
-        maxA = tile.data[i][j];
-        maxI = i;
-        maxJ = j;
+        maxAlt = tile->data[pt];
+        lon = i * (tile->longitudeDimension - 1) / 3600;
+        lat = j * (tile->latitudeDimension - 1) / 3600;
       }
     }
   }
-  fprintf(stdout,"Altitude: %dm. Coordinates: i=%d (longitude) and j=%d (latitude)\n",maxA,maxI,maxJ);
+  fprintf(stdout,"Altitude max: %dm. Coordinates: %d seconds in longitude "
+      "and %d seconds in latitude\n",maxAlt,lon,lat);
 }
 
 
 int main()
 {
-  Tile tile={NULL,0,0};
-
   /* open and read DTED files */
+ 
+  Tile* t;
   
-  fprintf(stdout,"Test 1: open and read a 1 second resolution file\n");
-  openTile("data/n45_e008_1arc_v3.dt2",&tile);
-  freeTile(&tile);
-  
-  fprintf(stdout,"Test 2: free the occupied space and open a tile with different resolutions in the two dimensions\n");
-  freeTile(&tile);
-  openTile("data/n59_e009_1arc_v3.dt2",&tile);
+  fprintf(stdout, "----------\n");
+  fprintf(stdout, "Open a 1 second resolution file and free the memory.\n");
+  t = openTile("data/n45_e008_1arc_v3.dt2");
+  freeTile(t);
+  fprintf(stdout, "----------\n\n");
 
-  fprintf(stdout,"Test 4: read the data of a tile with E longitudes and N latitude (Mt blanc)\n");
-  freeTile(&tile);
-  openTile("data/n45_e006_1arc_v3.dt2",&tile);
-  printMax(tile);
+  fprintf(stdout, "----------\n");
+  fprintf(stdout, "Open a file with different resolutions in the two "
+      "dimensions.\n");
+  t = openTile("data/n59_e009_1arc_v3.dt2");
+  freeTile(t);
+  fprintf(stdout, "----------\n\n");
 
-  fprintf(stdout,"Test 4: read the data of a tile with W longitudes and S latitude (Aconcagua)\n");
-  freeTile(&tile);
-  openTile("data/s33_w071_1arc_v3.dt2",&tile);
-  printMax(tile);
+  fprintf(stdout, "----------\n");
+  fprintf(stdout, "Read the data of a tile in the north hemisphere, east of "
+      "Prime Meridian (Mont blanc).\n");
+  freeTile(t);
+  t = openTile("data/n45_e006_1arc_v3.dt2");
+  printMax(t);
+  fprintf(stdout, "----------\n\n");
 
-  fprintf(stdout,"Test 5: read DTED file and store the data in a Space\n");
-  Space space;
-  allocSpace(&space);
-  for (int i=0 ; i<DIM_DEG*2 ; i++)
-  {
-    space.tile[0][i] = malloc(sizeof(Tile));
-    openTile("data/s33_w071_1arc_v3.dt2",space.tile[0][i]);
-    printMax(*space.tile[0][i]);
-  }
+  fprintf(stdout, "----------\n");
+  fprintf(stdout,"Read data of a tile in south hemisphere, west of Prime "
+      "Meridian (Aconcagua).\n");
+  freeTile(t);
+  t = openTile("data/s33_w071_1arc_v3.dt2");
+  printMax(t);
+  fprintf(stdout, "----------\n\n");
 
   return 0;
 }
+
