@@ -25,7 +25,7 @@
  */
 static int16_t toLittleEndian(int16_t x)
 {
-  x = (x >> 8) | (x << 8);
+  x = ((uint16_t) x >> 8) | ((uint16_t) x << 8);
   x = x & 0x8000 ? -1 * (x & 0x7FFF) : x;
   return x;
 }
