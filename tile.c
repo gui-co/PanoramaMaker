@@ -51,9 +51,9 @@ Tile* openTile(char* fileName)
 {
   FILE* dtedFile;
   long fileSize, expectedSize;
-  char headerData[8];
+  char headerData[10];
   Tile* tile;
-  int nbLon, nbLat, pt;
+  int nbLon, nbLat, pt, coverage;
 
   // Open file.
   if (!(dtedFile = fopen(fileName, "r")))
@@ -64,23 +64,30 @@ Tile* openTile(char* fileName)
   fprintf(stdout, "Opening of %s\n", fileName);
 
   // Get the number of points.
-  fseek(dtedFile, 361, SEEK_CUR);
-  fread(&headerData, 8, 1, dtedFile);
+  fseek(dtedFile, DTED_DSI_NBLAT, SEEK_SET);
+  fread(&headerData, 4, 1, dtedFile);
   nbLat = 1000 * (headerData[0] - 48) + 100 * (headerData[1] - 48) 
           + 10 * (headerData[2] - 48) + (headerData[3] - 48);
-  nbLon = 1000 * (headerData[4] - 48) + 100 * (headerData[5] - 48) 
-          + 10 * (headerData[6] - 48) + (headerData[7] - 48);
+  fseek(dtedFile, DTED_DSI_NBLON, SEEK_SET);
+  fread(&headerData, 4, 1, dtedFile);
+  nbLon = 1000 * (headerData[0] - 48) + 100 * (headerData[1] - 48) 
+          + 10 * (headerData[2] - 48) + (headerData[3] - 48);
   
-  // Check file size.
+  // Check file.
   fseek(dtedFile, 0, SEEK_END);
   fileSize = ftell(dtedFile);
   fprintf(stdout, "Size: %ld bytes\n", fileSize);
-  expectedSize = 3428 + (nbLat * 2 + 12) * nbLon;
+  expectedSize = DTED_DATA + (nbLat * 2 + 12) * nbLon;
   if (fileSize != expectedSize)
   {
     errPrintf("The file has an incorrect size. %ld bytes where expected", 
         expectedSize);
   }
+  fseek(dtedFile, DTED_DSI_DATACOV, SEEK_SET);
+  fread(&headerData, 2, 1, dtedFile);
+  coverage = 10 * (headerData[0] - 48) + (headerData[1] - 48);
+  coverage = coverage ? coverage : 100;
+  printf("File covers %d%% of the region.\n", coverage); 
 
   // Memory allocation.
   if (!(tile = malloc(sizeof(Tile))))
