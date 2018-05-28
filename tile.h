@@ -14,9 +14,9 @@
 #include "typeConst.h"
 
 
-void freeTile(Tile *);
+void freeTile(Tile*);
 
-Tile * openTile(char *);
+Tile * openTile(char*);
 
 #endif
 
