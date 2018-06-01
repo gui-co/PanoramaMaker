@@ -8,7 +8,6 @@
  *****************************************************************************/
 
 
-#include "typeConst.h"
 #include "tile.h"
 #include "error.h"
 #include <stdio.h>
