@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <math.h>
 #include <errno.h>
+#include <string.h>
 
 
 /*
@@ -117,5 +118,62 @@ Tile* openTile(char* fileName)
   
   fclose(dtedFile);
   return tile;
+}
+
+
+/*
+ * Create a space, data structure that will contain the tiles around the
+ * origin.
+ * param originLon: longitude of the origin, center of the space.
+ * param originLat: latitude of the origin, center of the space.
+ * return: pointer to the space.
+ */
+Space* initSpace(double originLon, double originLat)
+{
+  Space* space;
+  char fileName[35];
+  char lonDir;
+  char latDir;
+  int lonDeg;
+  int latDeg;
+
+  // Init Space
+  if (!(space = malloc(sizeof(Space))))
+  {
+    errPrintf("Unable to allocate memory for the space >");
+  }
+  space->originLon = originLon;
+  space->originLat = originLat;
+  memset(space->tiles, 0, SIZE_SPACE * sizeof(Tile*));
+
+  // Open the DTED file corresponding to origin
+  lonDir = originLon > 0 ? 'e' : 'w';
+  latDir = originLat > 0 ? 'n' : 's';
+  lonDeg = (int) originLon;
+  lonDeg = lonDeg > 0 ? lonDeg : -(lonDeg - 1);
+  latDeg = (int) originLat;
+  latDeg = latDeg > 0 ? latDeg : -(latDeg - 1);
+  sprintf(fileName, DATA_DIR "%c%02d_%c%03d_1arc_v3.dt2",
+      latDir, latDeg, lonDir, lonDeg);
+  space->tiles[SIZE_SPACE / 2] = openTile(fileName);
+
+  return space;
+}
+
+
+/*
+ * Free space associated to a space.
+ * param space: the space to be freed
+ */
+void freeSpace(Space* space)
+{
+  for (int i = 0 ; i < SIZE_SPACE ; i++)
+  {
+    if (space->tiles[i])
+    {
+      freeTile(space->tiles[i]);
+    }
+  }
+  free(space);
 }
 
