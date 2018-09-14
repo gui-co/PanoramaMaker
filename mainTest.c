@@ -10,6 +10,7 @@
 
 #include "tile.h"
 #include "error.h"
+#include "coordinate.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -96,6 +97,35 @@ int main()
   s = initSpace(-70.01, -32.65);
   printMax(s->tiles[SIZE_SPACE / 2]);
   freeSpace(s);
+  fprintf(stdout, "----------\n\n");
+
+  fprintf(stdout, "----------\n");
+  fprintf(stdout,"Target a point with distance and bearing.\n");
+  double targetLon;
+  double targetLat;
+  fprintf(stdout, "Distance: 100 km, bearing: 60 degres, from 6.86 east - "
+      "45.83 north.\n");
+  target(6.86, 45.83, 100000, 60, &targetLon, &targetLat);
+  fprintf(stdout, "Waited latitude: 46.27 ; obtained: %lf\n", targetLat);
+  fprintf(stdout, "Waited longitude: 7.99 ; obtained: %lf\n", targetLon);
+  fprintf(stdout, "\n");
+  fprintf(stdout, "Distance: 100 km, bearing: 0 degres, from 6.86 east - "
+      "45.83 north.\n");
+  target(6.86, 45.83, 100000, 0, &targetLon, &targetLat);
+  fprintf(stdout, "Waited latitude: 46.73 ; obtained: %lf\n", targetLat);
+  fprintf(stdout, "Waited longitude: 6.86 ; obtained: %lf\n", targetLon);
+  fprintf(stdout, "\n");
+  fprintf(stdout, "Distance: 100 km, bearing: 60 degres, from 6.86 west - "
+      "45.83 north.\n");
+  target(-6.86, 45.83, 100000, 60, &targetLon, &targetLat);
+  fprintf(stdout, "Waited latitude: 46.27 ; obtained: %lf\n", targetLat);
+  fprintf(stdout, "Waited longitude: -5.73 ; obtained: %lf\n", targetLon);
+  fprintf(stdout, "\n");
+  fprintf(stdout, "Distance: 100 km, bearing: 60 degres, from 6.86 east - "
+      "45.83 south.\n");
+  target(6.86, -45.83, 100000, 60, &targetLon, &targetLat);
+  fprintf(stdout, "Waited latitude: -45.37 ; obtained: %lf\n", targetLat);
+  fprintf(stdout, "Waited longitude: 7.97 ; obtained: %lf\n", targetLon);
   fprintf(stdout, "----------\n\n");
 
   return 0;
