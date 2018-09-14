@@ -15,6 +15,7 @@
 /*
  * Get the longitude / latitude af a destination point given distance and 
  * bearing from origin point.
+ * from http://www.movable-type.co.uk/scripts/latlong.html
  * param originLon: Longitude of the origin point.
  * param originLat: Latitude of the origin point.
  * param distance: distance to destination point.
