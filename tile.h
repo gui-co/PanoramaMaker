@@ -21,11 +21,11 @@
 /* 
  * DTED file header and data positions.
  */
-#define DTED_DSI          80                                                             
-#define DTED_DATA         3428                                                          
-#define DTED_DSI_NBLAT    (DTED_DSI + 281)                                         
-#define DTED_DSI_NBLON    (DTED_DSI + 285)                                         
-#define DTED_DSI_DATACOV  (DTED_DSI + 289)  
+#define DTED_DSI          80
+#define DTED_DATA         3428
+#define DTED_DSI_NBLAT    (DTED_DSI + 281)
+#define DTED_DSI_NBLON    (DTED_DSI + 285)
+#define DTED_DSI_DATACOV  (DTED_DSI + 289)
 
 /*
  * Some constant values.
